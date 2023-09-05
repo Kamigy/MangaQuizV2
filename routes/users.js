@@ -1,24 +1,46 @@
 const express = require('express');
 const router = express.Router();
 
-router.get('/register', (req, res) => {
-    // Afficher le formulaire d'inscription
-    res.send('Page d\'inscription');
+const bcrypt = require('bcrypt');
+
+router.post('/signup', async (req, res) => {
+    const { username, password } = req.body;
+
+    // Vérifier si l'utilisateur existe déjà
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+        return res.status(400).send('L\'utilisateur existe déjà');
+    }
+
+    // Crypter le mot de passe + tard
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+        username,
+        password: hashedPassword,
+        score: 0
+    });
+
+    user.save()
+        .then(() => res.send('Inscription réussie'))
+        .catch(err => res.status(500).send(err.message));
 });
 
-router.post('/register', (req, res) => {
-    // Traitement de l'inscription
-    res.send('Inscription en cours...');
-});
+router.post('/login', async (req, res) => {
+    const { username, password } = req.body;
 
-router.get('/login', (req, res) => {
-    // Afficher le formulaire de connexion
-    res.send('Page de connexion');
-});
+    const user = await User.findOne({ username });
+    if (!user) {
+        return res.status(400).send('Nom d\'utilisateur ou mot de passe incorrect');
+    }
 
-router.post('/login', (req, res) => {
-    // Traitement de la connexion
-    res.send('Connexion en cours...');
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        return res.status(400).send('Nom d\'utilisateur ou mot de passe incorrect');
+    }
+
+    // Générer un JWT ou utiliser une session pour garder l'utilisateur connecté
+    res.send('Connexion réussie');
 });
 
 module.exports = router;

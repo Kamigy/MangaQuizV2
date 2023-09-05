@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
     username: String,
-    password: String,  // assurez-vous de ne jamais stocker les mots de passe en clair
+    password: String,  // ne pas stocker le mdp en dur
     score: Number
 });
 

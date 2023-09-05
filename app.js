@@ -10,12 +10,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configuration de la session
 app.use(session({
-    secret: 'mario2002', // Changez ceci pour une chaîne secrète unique
+    secret: 'mario2002', 
     resave: false,
     saveUninitialized: false
 }));
 
-// Connexion à MongoDB (assurez-vous d'avoir configuré MongoDB comme mentionné précédemment)
+// Connexion à MongoDB 
 mongoose.connect('mongodb://127.0.0.1:27017/MangaQuiz', { useNewUrlParser: true, useUnifiedTopology: true });
 
 const db = mongoose.connection;
@@ -32,7 +32,9 @@ app.listen(PORT, () => {
 
 const userRoutes = require('./routes/users');
 const quizRoutes = require('./routes/quiz');
+const questionsRoutes = require('./routes/questions');
 
-// Utilisez les routeurs
+// Routeurs
 app.use('/users', userRoutes);
 app.use('/quiz', quizRoutes);
+app.use('/questions',questionsRoutes);
