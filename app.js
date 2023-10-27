@@ -4,10 +4,11 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const User = require('./models/Users');
 const Comment = require('./models/Comment');
+// Configuration de body-parser pour traiter les requêtes POST
+const MongoStore = require('connect-mongo');
 
 const app = express();
 
-// Configuration de body-parser pour traiter les requêtes POST
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set('view engine', 'ejs');
@@ -20,7 +21,9 @@ console.log(__dirname + '/public')
 app.use(session({
     secret: 'mario2002', 
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: 'mongodb://127.0.0.1:27017/MangaQuiz' })
+
 }));
 
 app.use(express.json());
