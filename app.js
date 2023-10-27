@@ -8,15 +8,28 @@ const Comment = require('./models/Comment');
 const MongoStore = require('connect-mongo');
 
 const app = express();
+app.post('/rooms/create', (req, res) => {
+  const room = new Room({
+      code: generateUniqueCode(), // vous devriez écrire cette fonction
+      host: req.session.userId,  // Supposant que l'ID de l'utilisateur est stocké dans la session
+      // ... autres propriétés initiales
+  });
+  room.save().then(() => {
+      res.json({ message: 'Salon créé avec succès!', roomCode: room.code });
+  });
+});
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set('view engine', 'ejs');
+
 app.get('/', (req, res) => {
   res.render('index'); 
 });
+
 app.use(express.static(__dirname + '/public'));
-console.log(__dirname + '/public')
+
 // Configuration de la session
 app.use(session({
     secret: 'mario2002', 
@@ -66,14 +79,15 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Serveur démarré sur http://localhost:${PORT}`);
 });
-//... (autres imports)
 
 const userRoutes = require('./routes/users');
 const quizRoutes = require('./routes/quiz');
 const questionsRoutes = require('./routes/questions');
+const roomRoutes = require('.routes/room');
 
 // Routeurs
 app.use('/users', userRoutes);
 app.use('/quiz', quizRoutes);
 app.use('/questions',questionsRoutes);
-  
+app.use('/room', roomRoute);
+

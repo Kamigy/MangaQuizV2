@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const profileButton = document.getElementById('profileButton'); 
 
+    const createRoomButton = document.getElementById('create-room-btn');
+    const roomCodeInput = document.getElementById('room-code-input');
+    
+
 function updateUI(isAuthenticated) {
     if (isAuthenticated) {
         loginButtonF.style.display = 'none';
@@ -28,6 +32,23 @@ function updateUI(isAuthenticated) {
         logoutButton.style.display = 'none';
     }
 }
+
+createRoomButton.addEventListener('click', function() {
+    fetch('http://localhost:3000/rooms/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        if (data.roomCode) {
+            // Faire quelque chose avec le code du salon, par exemple l'afficher à l'utilisateur
+        }
+    });
+});
 
 fetch('http://localhost:3000/users/check-authentication') 
 .then(response => response.json())
