@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manga Quiz</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <nav>
+        <img id="nav-logo" src="assets/mangalogo.png"/>
+        <ul>
+            <li><button id="login-btn">Connexion</button></li>
+            <li><button id="register-btn">Inscription</button></li>
+        </ul>
+    </nav>
+    <main>
+        <div id="content">
+            <input type="text" placeholder="Entrez le code du salon" id="room-code-input">
+            <button id="create-room-btn">Créer un salon</button>
+        </div>
+    </main>
+
+    <!-- Modal Connexion -->
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Connexion</h2>
+        <form id="loginForm">
+            <input id="usernameLogin" type="text" name="username" placeholder="Nom d'utilisateur" required>
+            <input id="pwdLogin" type="password" name="password" placeholder="Mot de passe" required>
+            <button id="loginButton" type="button">Se connecter</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Inscription -->
+<div id="registerModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Inscription</h2>
+        <form id="registerForm">
+            <input id="usernameInput" type="text" name="username" placeholder="Nom d'utilisateur" required>
+            <input id="passwordInput" type="password" name="password" placeholder="Mot de passe" required>
+            <input id="emailInput" type="email" name="email" placeholder="Email" required>
+            <button id="registerButton" type="button">Inscription</button>
+        </form>        
+    </div>
+</div>
+
+
+
+    <script>
+        // Récupération des modals
+        var loginModal = document.getElementById('loginModal');
+        var registerModal = document.getElementById('registerModal');
+
+        // Récupération des boutons
+        var loginBtn = document.getElementById('login-btn');
+        var registerBtn = document.getElementById('register-btn');
+
+        // Récupération des éléments de fermeture
+        var closeBtns = document.getElementsByClassName('close-btn');
+
+        // Affichage du modal Connexion
+        loginBtn.onclick = function() {
+            loginModal.style.display = "block";
+        }
+
+        // Affichage du modal Inscription
+        registerBtn.onclick = function() {
+            registerModal.style.display = "block";
+        }
+
+        // Fermeture des modals
+        for (var i = 0; i < closeBtns.length; i++) {
+            closeBtns[i].onclick = function() {
+                loginModal.style.display = "none";
+                registerModal.style.display = "none";
+            }
+        }
+
+        // Fermeture du modal si on clique en dehors
+        window.onclick = function(event) {
+            if (event.target == loginModal || event.target == registerModal) {
+                loginModal.style.display = "none";
+                registerModal.style.display = "none";
+            }
+        }
+    </script>
+    <script src="/client.js"></script>
+</body>
+
+</html>
