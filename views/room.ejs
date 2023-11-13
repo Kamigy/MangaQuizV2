@@ -1,0 +1,23 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manga Quiz</title>
+    <link rel="stylesheet" href="/styles/room.css">
+</head>
+<div id="roomDisplay">
+    <h2>Code du Salon: <span id="roomCode"><%= roomCode %></span></h2>
+    <ul id="userList"></ul>
+</div>
+<div id="chat-box">
+    <div id="chat-messages" style="height:200px;overflow-y:scroll;"></div>
+    <input type="text" id="chat-input" placeholder="Tapez un message..." />
+    <button id="send-message">Envoyer</button>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const roomCode = "<%= roomCode %>";
+    const userId = "<%= userId %>"; 
+</script>
+<script src="/js/roomClient.js"></script>
+</body>

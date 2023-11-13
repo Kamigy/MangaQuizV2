@@ -6,7 +6,6 @@ const bcrypt = require('bcrypt');
 router.post('/signup', async (req, res) => {
     const { username,email, password} = req.body;
 
-    // Vérifier si l'utilisateur existe déjà en fonction de l'username
     const existingUser = await User.findOne({ username });
 
     if (existingUser) {
@@ -33,7 +32,7 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) {
         return res.status(400).send('Nom d\'utilisateur ou mot de passe incorrect');
-    }
+    } 
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -47,6 +46,15 @@ router.post('/login', async (req, res) => {
 
 });
 
+router.get('/test-session', (req, res) => {
+    if (req.session) {
+        res.json({ session: req.session });
+    } else {
+        res.status(500).json({ message: "La session n'existe pas." });
+    }
+});
+
+
 router.get('/check-authentication', (req, res) => {
     if (req.session && req.session.user) {
         res.json({ isAuthenticated: true });
@@ -57,8 +65,15 @@ router.get('/check-authentication', (req, res) => {
 
 
 router.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.send({ message: 'Déconnecté avec succès', isAuthenticated: false });
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Erreur lors de la destruction de la session:', err);
+            res.status(500).send('Erreur lors de la déconnexion');
+        } else {
+            res.send({ message: 'Déconnecté avec succès', isAuthenticated: false });
+        }
+    });
 });
+
 
 module.exports = router;

@@ -6,3 +6,5 @@ const roomSchema = new mongoose.Schema({
     participants: [mongoose.Schema.Types.ObjectId],
     quizId: mongoose.Schema.Types.ObjectId
 });
+
+module.exports = mongoose.model('Room', roomSchema);
