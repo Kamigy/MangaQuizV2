@@ -111,8 +111,8 @@ socket.on('hostCheck', ({ isHost }) => {
 
   // Affichez ou masquez les contrôles en fonction du statut d'hôte
   if (isHost) {
-      if (difficultySelection) difficultySelection.style.display = 'block';
-      if (startQuizButton) startQuizButton.style.display = 'block';
+      if (difficultySelection) difficultySelection.style.display = 'flex';
+      if (startQuizButton) startQuizButton.style.display = 'flex';
   } else {
       if (difficultySelection) difficultySelection.style.display = 'none';
       if (startQuizButton) startQuizButton.style.display = 'none';
