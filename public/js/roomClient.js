@@ -1,62 +1,120 @@
 const socket = io();
 
+let selectedDifficulty;
+let selectedGameMode;
+const roomCodeDisplay = document.getElementById('roomCode');
+const userList = document.getElementById('userList');
+const chatInput = document.getElementById('chat-input');
+const sendMessageButton = document.getElementById('send-message');
+const chatMessages = document.getElementById('chat-messages');
+const startQuizButton = document.getElementById('start-quiz-btn');
+const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+let cards;
+
 socket.on('connect', () => {
+  // Envoyer l'ID de l'utilisateur au serveur lors de la connexion
   socket.emit('joinRoom', { roomId: roomCode, userId: userId });
 });
 
 socket.on('roomUsers', ({ roomId, users }) => {
-  const roomCodeDisplay = document.getElementById('roomCode');
-  const userList = document.getElementById('userList');
+  roomCodeDisplay.textContent = roomId;
+  updateUserList(users);
+});
 
-  roomCodeDisplay.textContent = roomId; // Affiche le code de la salle
-  userList.innerHTML = ''; 
+socket.on('chatMessage', (data) => {
+  const div = document.createElement('div');
+  div.classList.add('chat-message');
+  div.innerHTML = `<strong>${data.userName}:</strong> ${data.message}`;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+
+socket.on('userDisconnected', (data) => {
+  const userElement = document.querySelector(`[data-user-id="${data.userId}"]`);
+  if (userElement) {
+    userElement.remove();
+  }
+});
+
+function updateUserList(users) {
+  userList.innerHTML = '';
   users.forEach(user => {
     const li = document.createElement('li');
     li.innerText = user.name;
     li.setAttribute('data-user-id', user.id);
     userList.appendChild(li);
   });
-});
+}
 
-socket.on('updateRoom', (data) => {
-  const roomCodeDisplay = document.getElementById('roomCode');
-  const participantList = document.getElementById('userList');
+//Chatbox
+function sendMessage() {
+  const message = chatInput.value.trim();
+  if (message) {
+    // Envoyer l'ID de l'utilisateur avec le message
+    socket.emit('chatMessage', { userId, message });
+    chatInput.value = '';
+    chatInput.focus();
+  }
+}
 
-  roomCodeDisplay.textContent = data.roomCode;
-  participantList.innerHTML = '';
-  data.participants.forEach((participant) => {
-      const li = document.createElement('li');
-      li.textContent = participant;
-      participantList.appendChild(li);
-  });
-});
-
-const chatInput = document.getElementById('chat-input');
-const sendMessageButton = document.getElementById('send-message');
-const chatMessages = document.getElementById('chat-messages');
-
-sendMessageButton.addEventListener('click', function() {
-    console.log('message reçu')
-    const message = chatInput.value.trim();
-    if(message) {
-        socket.emit('chatMessage', { userId, message });
-        chatInput.value = '';
-        chatInput.focus();
-    }
-});
-
-socket.on('userDisconnected', (data) => {
-  const userElement = document.querySelector(`[data-user-id="${data.userId}"]`);
-  if (userElement) {
-      userElement.remove(); 
+chatInput.addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    sendMessage();
+    chatInput.focus();
   }
 });
 
-socket.on('chatMessage', (data) => {
-    const div = document.createElement('div');
-    div.classList.add('chat-message');
-    div.innerHTML = `<strong>${data.userName}:</strong> ${data.message}`;
-    chatMessages.appendChild(div);
+sendMessageButton.addEventListener('click', sendMessage);
 
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+function startQuiz() {
+  if (selectedDifficulty && selectedGameMode) {
+    socket.emit('startQuiz', { roomCode, difficulty: selectedDifficulty, gameMode: selectedGameMode });
+    document.getElementById('difficulty-selection').style.display = 'none';
+    document.getElementById('game-mode-selection').style.display = 'none';
+  } else {
+    alert("Veuillez sélectionner un mode de jeu et une difficulté avant de commencer.");
+  }
+}
+
+// Fonction pour gérer le clic sur une carte
+function onCardClick(event) {
+  cards.forEach(card => card.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  selectedGameMode = event.currentTarget.querySelector('.title').textContent.trim();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  difficultyButtons.forEach(button => {
+    button.addEventListener('click', (event) => {
+      selectedDifficulty = event.target.dataset.difficulty;
+      difficultyButtons.forEach(btn => btn.classList.remove('selected'));
+      button.classList.add('selected');
+    });
+  });
+
+  startQuizButton.addEventListener('click', startQuiz);
+
+  // Attachez le gestionnaire de clic aux cartes de jeu
+  cards = document.querySelectorAll('.card');
+  cards.forEach(card => card.addEventListener('click', onCardClick));
+});
+
+socket.on('quizStarted', ({ gameMode }) => {
+  console.log(`Le jeu de ${gameMode} a commencé!`);
+  // Implémentez ici la logique pour afficher les questions de quiz
+});
+
+socket.on('hostCheck', ({ isHost }) => {
+  const difficultySelection = document.getElementById('difficulty-selection');
+  const startQuizButton = document.getElementById('start-quiz-btn');
+
+  // Affichez ou masquez les contrôles en fonction du statut d'hôte
+  if (isHost) {
+      if (difficultySelection) difficultySelection.style.display = 'block';
+      if (startQuizButton) startQuizButton.style.display = 'block';
+  } else {
+      if (difficultySelection) difficultySelection.style.display = 'none';
+      if (startQuizButton) startQuizButton.style.display = 'none';
+  }
 });

@@ -34,33 +34,45 @@ function updateUI(isAuthenticated) {
     }
 }
 
-joinRoomButton.addEventListener('click', function() {
-    const roomCode = roomCodeInput.value; // Récupère le code de la salle à partir de l'input
-    fetch('http://localhost:3000/room/join', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ roomCode: roomCode }), // Envoie le code de la salle dans le corps de la requête
-        credentials: 'include'
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Problème lors de la tentative de rejoindre le salon');
-        }
-        return response.json();
-    })
-    .then(data => {
-        alert(data.message);
-        if (data.roomCode) {
-            window.location.href = `/room/${data.roomCode}`; // Redirige l'utilisateur vers la salle
-        } else {
-            console.error('Vous ne pouvez pas rejoindre ce salon');
-        }
-    }).catch(error => {
-        console.error('Erreur lors de la connexion au salon:', error);
-        alert('Erreur lors de la connexion au salon: ' + error.message);
-    });
+function joinRoom() {
+    const roomCode = roomCodeInput.value.trim(); // Assurez-vous de nettoyer l'espace blanc
+    if (roomCode) {
+        fetch('http://localhost:3000/room/join', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ roomCode: roomCode }),
+            credentials: 'include'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Problème lors de la tentative de rejoindre le salon');
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(data.message);
+            if (data.roomCode) {
+                window.location.href = `/room/${data.roomCode}`; 
+            } else {
+                console.error('Vous ne pouvez pas rejoindre ce salon');
+            }
+        }).catch(error => {
+            console.error('Erreur lors de la connexion au salon:', error);
+            alert('Erreur lors de la connexion au salon: ' + error.message);
+        });
+    } else {
+        alert('Veuillez entrer un code de salon.');
+    }
+}
+
+joinRoomButton.addEventListener('click', joinRoom);
+
+roomCodeInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        joinRoom();
+    }
 });
 
 createRoomButton.addEventListener('click', function() {
