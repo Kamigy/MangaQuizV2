@@ -35,4 +35,18 @@ router.post('/answer', async (req, res) => {
     res.send('Réponse correcte et score mis à jour');
 });
 
+router.get('/question/:difficulty', (req, res) => {
+    const { difficulty } = req.params;
+    Question.aggregate([
+        { $match: { difficulty: difficulty } },
+        { $sample: { size: 1 } }
+    ])
+    .then(question => {
+        res.json(question);
+    })
+    .catch(err => {
+        res.status(500).send(err.message);
+    });
+});
+
 module.exports = router;
