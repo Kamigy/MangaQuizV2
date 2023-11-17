@@ -100,10 +100,16 @@ document.addEventListener('DOMContentLoaded', () => {
   cards.forEach(card => card.addEventListener('click', onCardClick));
 });
 
-socket.on('quizStarted', ({ gameMode }) => {
+socket.on('quizStarted', ({ gameMode , roomCode: roomCodeFromServer }) => {
   console.log(`Le jeu de ${gameMode} a commencé!`);
-  window.location.href = '/quiz/play';
+  const roomCode = new URLSearchParams(window.location.search).get('roomCode') || roomCodeFromServer;
+  if (roomCode) {
+    window.location.href = `/quiz/play?roomCode=${roomCode}`;
+  } else {
+    console.error('Room code is missing');
+  }
 });
+
 
 socket.on('hostCheck', ({ isHost }) => {
   const difficultySelection = document.getElementById('difficulty-selection');
@@ -121,7 +127,7 @@ socket.on('hostCheck', ({ isHost }) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   const startQuizButton = document.getElementById('start-quiz-btn');
-  const roomId = new URLSearchParams(window.location.search).get('roomId');
+  const roomId = new URLSearchParams(window.location.search).get('roomCode');
 
   if (startQuizButton) {
       startQuizButton.addEventListener('click', () => {

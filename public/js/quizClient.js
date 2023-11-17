@@ -1,14 +1,17 @@
 const socket = io();
 
+const roomCode = new URLSearchParams(window.location.search).get('roomCode');
+
 socket.on('connect', () => {
-    console.log('entered')
+  console.log('Connecté, roomCode:', roomCode);
 });
 
 socket.on('newQuestion', (data) => {
+    console.log('Received question:', data);
     displayQuestion(data);
-    console.log(data)
 });
 
+  
 function displayQuestion(data) {
     const questionElement = document.getElementById('question');
     const optionsContainer = document.getElementById('options-container');
@@ -16,7 +19,7 @@ function displayQuestion(data) {
     questionElement.textContent = data.question;
     optionsContainer.innerHTML = '';
 
-    console.log(data.question)
+    console.log('display',data.question,data)
 
     data.options.forEach((option, index) => {
         const optionButton = document.createElement('button');
@@ -26,6 +29,7 @@ function displayQuestion(data) {
         });
         optionsContainer.appendChild(optionButton);
     });
+    
 }
 
 function submitAnswer(questionId, selectedOption) {

@@ -1,6 +1,7 @@
 const socketIo = require('socket.io');
 const Question = require('./models/Questions'); 
 
+
 module.exports = function(server) {
     const io = socketIo(server);
     let rooms = {}; // Stocke les informations des salons
@@ -26,8 +27,8 @@ module.exports = function(server) {
             // Si la salle n'existe pas ou si l'utilisateur est le premier, il devient l'hôte
             if (!rooms[roomId]) {
                 rooms[roomId] = { hostId: socket.id, users: [newUser] };
-                isHost = true;
                 console.log(userId)
+                isHost = true;
             } else {
                 rooms[roomId].users.push(newUser);
                 // Informer l'utilisateur qu'il n'est pas l'hôte
@@ -35,28 +36,30 @@ module.exports = function(server) {
             }
             // Informer tous les participants de la salle à jour
             io.to(roomId).emit('updateUserList', rooms[roomId].users);
+            socket.emit('roomCode', roomId);
         });
 
         // Événement pour démarrer le quiz
-        socket.on('startQuiz', ({ roomCode, difficulty }) => {
+        socket.on('startQuiz', ({ roomCode, difficulty, gameMode }) => {
             const room = rooms[roomCode];
             if (room && socket.id === room.hostId) {
-                io.to(roomCode).emit('quizStarted', {});
                 Question.aggregate([
                     { $match: { difficulty: difficulty } },
                     { $sample: { size: 1 } }
-                ]).then(question => {
-                    if(question.length) {
-                        // Envoyer la question à tous les participants
-                        io.to(roomCode).emit('newQuestion', question[0]);
+                ]).then(questions => {
+                    if(questions.length) {
+                        io.emit('testEvent', { message: 'Test' });
+                        io.to(roomCode).emit('quizStarted', { gameMode, roomCode });
+                        io.to(roomCode).emit('newQuestion', questions[0]);
+                    } else {
+                        console.log("Aucune question trouvée pour la difficulté:", difficulty);
                     }
                 }).catch(err => {
                     console.error(err);
                 });
             }
         });
-
-        // Réception d'un message de chat
+        
         socket.on('chatMessage', ({ userId, message }) => {
             const userName = userId; // Ici, vous devriez probablement chercher le nom de l'utilisateur par son ID
             io.emit('chatMessage', { userName, message }); 
@@ -85,12 +88,18 @@ module.exports = function(server) {
         });
 
         socket.on('submitAnswer', ({ questionId, selectedOption }) => {
+            console.log('Question ID:', questionId); 
             Question.findById(questionId).then(question => {
+                if (!question) {
+                    console.error('Question not found');
+                    return;
+                }
                 const isCorrect = question.answer === selectedOption;
-                }).catch(err => {
+            }).catch(err => {
                 console.error(err);
             });
         });
+        
         
         function endQuiz(roomCode) {
             const room = rooms[roomCode];
