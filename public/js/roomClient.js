@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 socket.on('quizStarted', ({ gameMode }) => {
   console.log(`Le jeu de ${gameMode} a commencé!`);
-  // Implémentez ici la logique pour afficher les questions de quiz
+  window.location.href = '/quiz/play';
 });
 
 socket.on('hostCheck', ({ isHost }) => {
@@ -116,5 +116,17 @@ socket.on('hostCheck', ({ isHost }) => {
   } else {
       if (difficultySelection) difficultySelection.style.display = 'none';
       if (startQuizButton) startQuizButton.style.display = 'none';
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const startQuizButton = document.getElementById('start-quiz-btn');
+  const roomId = new URLSearchParams(window.location.search).get('roomId');
+
+  if (startQuizButton) {
+      startQuizButton.addEventListener('click', () => {
+          const difficulty = selectedDifficulty;
+          socket.emit('startQuiz', { roomCode: roomId, difficulty });
+        });
   }
 });

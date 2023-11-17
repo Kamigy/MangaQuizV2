@@ -1,4 +1,5 @@
 const socketIo = require('socket.io');
+const Question = require('./models/Questions'); 
 
 module.exports = function(server) {
     const io = socketIo(server);
@@ -37,14 +38,21 @@ module.exports = function(server) {
         });
 
         // Événement pour démarrer le quiz
-        socket.on('startQuiz', ({ roomCode, gameMode }) => {
+        socket.on('startQuiz', ({ roomCode, difficulty }) => {
             const room = rooms[roomCode];
-            if (room && room.hostId === socket.id) {
-                // Seul l'hôte peut démarrer le quiz
-                io.to(roomCode).emit('quizStarted', { gameMode });
-                // Initialisation du quiz ici...
-            } else {
-                socket.emit('error', { message: "Vous n'êtes pas autorisé à démarrer le quiz." });
+            if (room && socket.id === room.hostId) {
+                io.to(roomCode).emit('quizStarted', {});
+                Question.aggregate([
+                    { $match: { difficulty: difficulty } },
+                    { $sample: { size: 1 } }
+                ]).then(question => {
+                    if(question.length) {
+                        // Envoyer la question à tous les participants
+                        io.to(roomCode).emit('newQuestion', question[0]);
+                    }
+                }).catch(err => {
+                    console.error(err);
+                });
             }
         });
 
@@ -75,5 +83,27 @@ module.exports = function(server) {
                 }
             }
         });
+
+        socket.on('submitAnswer', ({ questionId, selectedOption }) => {
+            Question.findById(questionId).then(question => {
+                const isCorrect = question.answer === selectedOption;
+                }).catch(err => {
+                console.error(err);
+            });
+        });
+        
+        function endQuiz(roomCode) {
+            const room = rooms[roomCode];
+            if (room) {
+                const finalScores = room.users.map(user => ({
+                    userId: user.id,
+                    score: user.score 
+                }));
+        
+                finalScores.sort((a, b) => b.score - a.score);
+        
+                io.to(roomCode).emit('quizEnded', { finalScores });
+            }
+        }
     });
 };
